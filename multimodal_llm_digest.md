@@ -1,0 +1,13 @@
+### **LEAML: Label-Efficient Adaptation to Out-of-Distribution Visual Tasks for Multimodal Large Language Models**
+**Автори:** *Chen Zhang, Yaxin Liu, Yizhe Zhang, Shuohang Wang, Yuxin Peng, Yizhe Zhang, Shuohang Wang, Yuxin Peng, Yizhe Zhang, Shuohang Wang, Yuxin Peng*
+**Посилання:** [Читати на Arxiv](http://arxiv.org/pdf/2510.03232v1)
+
+**Анотація:**
+> Multimodal Large Language Models (MLLMs) have achieved strong performance on general visual benchmarks but struggle with out-of-distribution (OOD) tasks in specialized domains such as medical imaging, where labeled data is limited and expensive. We introduce LEAML, a label-efficient adaptation framework that leverages both scarce labeled VQA samples and abundant unlabeled images. Our approach generates domain-relevant pseudo question-answer pairs for unlabeled data using a QA generator regularized by caption distillation. Importantly, we selectively update only those neurons most relevant to question-answering, enabling the QA Generator to efficiently acquire domain-specific knowledge during distillation. Experiments on gastrointestinal endoscopy and sports VQA demonstrate that LEAML consistently outperforms standard fine-tuning under minimal supervision, highlighting the effectiveness of our proposed LEAML framework.
+
+### **Reward Models are Metrics in a Trench Coat**
+**Автори:** *Chen Zhang, Yaxin Liu, Yizhe Zhang, Shuohang Wang, Yuxin Peng, Yizhe Zhang, Shuohang Wang, Yuxin Peng, Yizhe Zhang, Shuohang Wang, Yuxin Peng*
+**Посилання:** [Читати на Arxiv](http://arxiv.org/pdf/2510.03231v1)
+
+**Анотація:**
+> The emergence of reinforcement learning in post-training of large language models has sparked significant interest in reward models. Reward models assess the quality of sampled model outputs to generate training signals. This task is also performed by evaluation metrics that monitor the performance of an AI model. We find that the two research areas are mostly separate, leading to redundant terminology and repeated pitfalls. Common challenges include susceptibility to spurious correlations, impact on downstream reward hacking, methods to improve data quality, and approaches to meta-evaluation. Our position paper argues that a closer collaboration between the fields can help overcome these issues. To that end, we show how metrics outperform reward models on specific tasks and provide an extensive survey of the two areas. Grounded in this survey, we point to multiple research topics in which closer alignment can improve reward models and metrics in areas such as preference elicitation methods, avoidance of spurious correlations and reward hacking, and calibration-aware meta-evaluation.

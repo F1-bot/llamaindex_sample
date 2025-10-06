@@ -1,0 +1,6 @@
+llama-index
+llama-index-llms-ollama
+llama-index-tools-arxiv
+llama-index-tools-wikipedia
+requests
+beautifulsoup4
