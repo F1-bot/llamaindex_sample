@@ -363,18 +363,18 @@ def main() -> int:
         return 0
 
     print("─" * 62)
-    print(f"✅ Готово за {time.time() - started:.0f} c")
+    print(f"OK: Готово за {time.time() - started:.0f} c")
     print(f"   Відповідь агента: {str(answer)[:300]}")
 
     report = REPORTS_DIR / REPORT_NAME
     if report.exists():
         text = report.read_text(encoding="utf-8")
         papers = len(re.findall(r"\*\*Автори:\*\*", text))
-        print(f"\n📄 {report} — {report.stat().st_size} байт, статей: {papers}")
+        print(f"\n[file] {report} — {report.stat().st_size} байт, статей: {papers}")
         print("─" * 62)
         print(text[:1200] + ("\n… [далі у файлі]" if len(text) > 1200 else ""))
     else:
-        print("\n⚠️  Звіт не створено: модель не викликала write_report.")
+        print("\n[!] Звіт не створено: модель не викликала write_report.")
         print("    Посильте вимогу в SYSTEM_PROMPT.")
     return 0
 
