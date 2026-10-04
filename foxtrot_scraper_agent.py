@@ -1,3 +1,23 @@
+"""
+foxtrot_scraper_agent.py — агент-скрапер магазину.
+
+Приклад студентської роботи: агент шукає товари на сайті foxtrot.com.ua,
+розбирає HTML через BeautifulSoup і зводить результат у звіт.
+
+⚠️  ЦЕЙ ПРИКЛАД КРИХКИЙ ЗА ПРИРОДОЮ.
+    Він тримається на конкретній HTML-розмітці чужого сайту. Розмітка
+    змінюється без попередження, і тоді скрапер мовчки повертає порожній
+    результат — не помилку, а просто «нічого не знайдено». Станом на
+    жовтень 2026 пошук уже не повертає товарів: селектори застаріли.
+    Для лабораторної надійніше брати документоване API або ToolSpec
+    з каталогу інтеграцій. Якщо все ж скрапите — поважайте robots.txt
+    і умови використання сайту, і не кладіть такий інструмент у продакшен
+    без узгодження з власником даних.
+
+ЯК ЗАПУСТИТИ
+    python foxtrot_scraper_agent.py
+    Потрібен Ollama з qwen3:8b та інтернет.
+"""
 import asyncio
 import requests
 from bs4 import BeautifulSoup
@@ -6,6 +26,21 @@ import urllib.parse
 from llama_index.core.tools import FunctionTool
 from llama_index.llms.ollama import Ollama
 from llama_index.core.agent.workflow import FunctionAgent
+
+
+def _setup_console() -> None:
+    """Windows-консоль стартує у cp1251 і падає на емодзі, щойно вивід
+    перенаправляють у файл. Викликаємо ПЕРЕД будь-яким print()."""
+    import sys
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
+_setup_console()
+
 
 
 def search_foxtrot(query: str) -> str:
@@ -72,7 +107,13 @@ def save_report_to_file(filename: str, report_content: str) -> str:
 
 
 print("Ініціалізація LLM (qwen3:8b)...")
-llm = Ollama(model="qwen3:8b", request_timeout=300.0)
+llm = Ollama(
+    model="qwen3:8b",
+    base_url="http://localhost:11434",
+    thinking=False,        # qwen3 інакше пише <think>-трасу перед кожним кроком
+    context_window=8192,   # LlamaIndex шле це в Ollama як num_ctx: 6.3 ГБ замість 11
+    request_timeout=300.0,
+)
 
 print("Створення інструментів...")
 foxtrot_tool = FunctionTool.from_defaults(fn=search_foxtrot)
@@ -98,8 +139,30 @@ agent = FunctionAgent(
     tools=all_tools,
     llm=llm,
     system_prompt=system_prompt,
-    verbose=True
+    # Дефолт — 20 ітерацій, і ніде не видно: агент, що заплутався,
+    # падає з WorkflowRuntimeError. "generate" дає деградовану,
+    # але збережену відповідь замість винятку.
+    early_stopping_method="generate",
 )
+
+
+
+async def _run_with_steps(agent, task: str) -> str:
+    """Друкує кожен виклик інструмента.
+
+    `verbose=True` цього НЕ дає: це не поле FunctionAgent, аргумент
+    провалюється у Workflow-рушій і друкує сирий лог подій.
+    """
+    from llama_index.core.agent.workflow import ToolCall, ToolCallResult
+
+    handler = agent.run(user_msg=task, max_iterations=12)
+    async for ev in handler.stream_events():
+        if isinstance(ev, ToolCall):
+            args = {k: str(v)[:60] for k, v in ev.tool_kwargs.items()}
+            print(f"   [tool] {ev.tool_name}({args})")
+        elif isinstance(ev, ToolCallResult):
+            print(f"   [out ] {str(ev.tool_output).replace(chr(10), ' ')[:140]}…")
+    return str(await handler)
 
 
 async def main():
@@ -109,7 +172,7 @@ async def main():
     )
     print(f"\n🚀 Запускаю агента із завданням: '{task}'\n")
 
-    response = await agent.run(user_msg=task)
+    response = await _run_with_steps(agent, task)
 
     print("\n✅ Завдання виконано!")
     print(f"Фінальна відповідь агента: {response}")

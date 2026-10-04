@@ -1,6 +1,24 @@
-llama-index
-llama-index-llms-ollama
-llama-index-tools-arxiv
-llama-index-tools-wikipedia
-requests
-beautifulsoup4
+# Лабораторна робота №2 — залежності.
+# Версії зафіксовані: перевірено на Windows 10, Python 3.10.6, Ollama 0.32.0.
+#   pip install -r requirements.txt
+
+llama-index-core==0.14.25        # ядро: FunctionAgent, FunctionTool, Workflow
+llama-index-llms-ollama==0.11.0  # локальна LLM через Ollama
+llama-index-tools-arxiv==0.6.0   # ToolSpec з каталогу інтеграцій (див. main.py --show-toolspec)
+arxiv==2.4.1                     # ним ми користуємось напряму: ToolSpec не віддає авторів
+python-dotenv==1.2.3             # читання .env; не обов'язковий
+pytest==9.1.1                    # тести інструментів, без виклику моделі
+
+# Для додаткових прикладів з репозиторію:
+llama-index-tools-wikipedia==0.6.0   # researcher_programmer_agent.py
+requests==2.32.5                     # foxtrot_scraper_agent.py
+beautifulsoup4==4.15.0               # foxtrot_scraper_agent.py
+
+# Свідомо НЕ тут:
+#   llama-index          — метапакет тягне десятки інтеграцій, яких тут не треба.
+#                          Беремо llama-index-core і потрібні пакети точково.
+#   llama-index-tools-duckduckgo — пакет існує, але НЕ ПРАЦЮЄ: він прибитий до
+#                          знятого з підтримки duckduckgo-search, і будь-який
+#                          виклик падає з primp.BuilderError: Invalid impersonate.
+#                          Якщо вашому варіанту потрібен веб-пошук — беріть `ddgs`
+#                          і обгорніть його власним FunctionTool.
