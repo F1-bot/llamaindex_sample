@@ -173,7 +173,22 @@ def show_toolspec() -> None:
         print(f"  • {t.metadata.name}({', '.join(params)})")
 
     print("\nЩо повертає arxiv_query (перші 300 символів першого результату):")
-    docs = spec.arxiv_query(query='all:"Multimodal Large Language Models"')
+    # Ще одна вада готового ToolSpec: він просить у arXiv одразу 100
+    # результатів і не має ретраїв. На повторних запусках arXiv відповідає
+    # HTTP 429 (Too Many Requests), і виклик просто падає. Наш власний
+    # search_arxiv цього не має: там arxiv.Client(num_retries=3).
+    docs = None
+    for attempt in range(3):
+        try:
+            docs = spec.arxiv_query(query='all:"Multimodal Large Language Models"')
+            break
+        except Exception as exc:                  # noqa: BLE001
+            if "429" in str(exc) and attempt < 2:
+                print(f"  arXiv відповів 429 (ліміт запитів), пауза {5 * (attempt + 1)} c…")
+                time.sleep(5 * (attempt + 1))
+                continue
+            print(f"  Не вдалося: {type(exc).__name__}: {str(exc)[:120]}")
+            return
     sample = str(docs[0])[:300].replace("\n", " ") if docs else "(порожньо)"
     print(f"  {sample}…")
     print("\n  ↑ Авторів тут немає. Саме тому нижче ми пишемо власний "
@@ -350,7 +365,7 @@ def main() -> int:
     task = (f"Знайди {args.count} найновіші статті на arXiv за темою "
             f"'{args.topic}'. Склади звіт за шаблоном і збережи його "
             f"у файл '{REPORT_NAME}'.")
-    print(f"\n▶ Завдання: {task}\n" + "─" * 62)
+    print(f"\n> Завдання: {task}\n" + "─" * 62)
 
     started = time.time()
     try:
